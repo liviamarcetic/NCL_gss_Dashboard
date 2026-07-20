@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NCL Guest Satisfaction Dashboard — 2023–2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Besley:ital@1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sand:#EBE7DF;
+    --sand-line:#D8D2C4;
+    --yellow:#E6CD88;
+    --aqua:#A7CAC6;
+    --medblue:#8EBFC2;
+    --teal:#68ACAA;
+    --ink:#20211d;
+    --turquoise:#00484F;
+    --oceanblue:#006099;
+    --nclblue:#0A84BD;
+    --salmon:#FF938A;
+    --white:#FFFFFF;
+    --green-cell:#DCEEE7; --green-text:#0f5c52;
+    --yellow-cell:#F7ECC9; --yellow-text:#7a5c14;
+    --red-cell:#FBDCD9;    --red-text:#9c3a30;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--sand); color:var(--ink);
+    font-family:'Poppins',sans-serif; font-weight:400;
+    -webkit-font-smoothing:antialiased;
+  }
+  .eyebrow{
+    font-family:'Besley',serif; font-style:italic; font-weight:400;
+    color:var(--white); font-size:14px; letter-spacing:.02em; opacity:.85;
+  }
+  .eyebrow.dark{ color:var(--turquoise); opacity:.9; }
+  h1,h2,h3{ font-family:'Poppins',sans-serif; margin:0; }
+  .caps{ text-transform:uppercase; letter-spacing:.22em; font-weight:600; }
+  .caps-tight{ text-transform:uppercase; letter-spacing:.12em; font-weight:600; }
+
+  /* ---------- Header ---------- */
+  header{
+    background:var(--turquoise); color:var(--white);
+    padding:30px 5vw 34px;
+  }
+  .header-top{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:18px; }
+  .brand-lockup{ display:flex; align-items:center; gap:16px; }
+  .shield{
+    width:52px; height:52px; background:#111; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .shield svg{ width:34px; height:auto; }
+  .wordmark{ line-height:1.05; }
+  .wordmark .line1{ font-size:19px; font-weight:600; letter-spacing:.16em; }
+  .wordmark .line2{ font-size:19px; font-weight:700; letter-spacing:.16em; }
+  .period-pill{
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.35);
+    border-radius:999px; padding:8px 18px; font-size:12.5px; letter-spacing:.06em;
+    white-space:nowrap;
+  }
+  .header-title{ margin-top:26px; }
+  .header-title h1{
+    font-size:clamp(28px,4vw,46px); font-weight:700; letter-spacing:.01em; line-height:1.08;
+  }
+  .header-sub{ margin-top:10px; max-width:760px; font-size:14.5px; line-height:1.55; color:rgba(255,255,255,.82); font-weight:400; }
+
+  /* ---------- Layout shells ---------- */
+  main{ padding:38px 0 10px; max-width:1320px; margin:0; flex:1; min-width:0; }
+  section{ margin-bottom:46px; }
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
+  .section-head h2{ font-size:20px; font-weight:700; letter-spacing:.02em; }
+  .section-note{ font-size:12.5px; color:#5c5a52; max-width:480px; line-height:1.5; }
+
+  /* ---------- Stat cards ---------- */
+  .stat-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:14px; }
+  @media (max-width:1100px){ .stat-grid{ grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:640px){ .stat-grid{ grid-template-columns:repeat(2,1fr);} }
+  .stat-card{
+    background:var(--white); border-radius:10px; padding:18px 16px;
+    border-top:4px solid var(--teal);
+  }
+  .stat-card.watch{ border-top-color:var(--salmon); }
+  .stat-card.good{ border-top-color:var(--teal); }
+  .stat-card .label{ font-size:10.5px; letter-spacing:.09em; color:#6b685f; font-weight:600; text-transform:uppercase; }
+  .stat-card .value{ font-size:28px; font-weight:700; margin-top:8px; letter-spacing:-.01em; }
+  .stat-card .delta{ font-size:12px; margin-top:6px; font-weight:500; }
+  .delta.pos{ color:#1c7a5e; }
+  .delta.neg{ color:#b5453a; }
+  .delta.flat{ color:#7a7768; }
+
+  /* ---------- Cards / panels ---------- */
+  .panel{ background:var(--white); border-radius:12px; padding:24px 26px; }
+  .two-col{ display:grid; grid-template-columns:1.3fr 1fr; gap:20px; }
+  @media (max-width:900px){ .two-col{ grid-template-columns:1fr; } }
+  .chart-wrap{ position:relative; }
+
+  .callout{
+    background:var(--turquoise); color:var(--white); border-radius:12px; padding:22px 24px;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .callout .headline{ font-size:16px; font-weight:600; line-height:1.4; }
+  .callout .headline b{ color:var(--yellow); }
+  .callout .sub{ font-size:12.5px; margin-top:10px; color:rgba(255,255,255,.75); line-height:1.5; }
+
+  /* ---------- Mover lists ---------- */
+  .mover-cols{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:760px){ .mover-cols{ grid-template-columns:1fr; } }
+  .mover-block h3{ font-size:13px; letter-spacing:.09em; text-transform:uppercase; margin-bottom:12px; }
+  .mover-block.improved h3{ color:#1c7a5e; }
+  .mover-block.declined h3{ color:#b5453a; }
+  .mover-row{
+    display:grid; grid-template-columns:1fr auto;
+    grid-template-areas: "name chg" "figs figs";
+    row-gap:3px; column-gap:14px;
+    padding:13px 0; border-bottom:1px solid var(--sand-line);
+  }
+  .mover-row.with-desc{ grid-template-areas: "name chg" "figs figs" "desc desc"; row-gap:4px; }
+  .mover-row:last-child{ border-bottom:none; padding-bottom:2px; }
+  .mover-row .name{ grid-area:name; font-weight:600; font-size:13.5px; }
+  .mover-row .figs{
+    grid-area:figs; font-variant-numeric:tabular-nums; color:#9b9887; font-size:11px;
+    white-space:nowrap; letter-spacing:.01em;
+  }
+  .mover-row .desc{ grid-area:desc; font-size:11.5px; color:#8a8778; line-height:1.42; }
+  .mover-row .chg{ grid-area:chg; font-weight:700; font-size:13.5px; text-align:right; white-space:nowrap; align-self:start; }
+  .chg.pos{ color:#1c7a5e; } .chg.neg{ color:#b5453a; }
+
+  /* ---------- Matrix (heatmap table) ---------- */
+  .matrix-scroll{ overflow-x:auto; border-radius:10px; }
+  table.matrix{ border-collapse:collapse; width:100%; min-width:980px; font-size:12px; }
+  table.matrix th, table.matrix td{ padding:9px 10px; text-align:center; white-space:nowrap; }
+  table.matrix thead th{
+    background:var(--turquoise); color:var(--white); font-weight:600; letter-spacing:.03em;
+    font-size:10.5px; text-transform:uppercase; position:sticky; top:0;
+  }
+  table.matrix tbody th{
+    text-align:left; background:var(--white); font-weight:600; position:sticky; left:0;
+    box-shadow:2px 0 0 var(--sand-line);
+  }
+  table.matrix tbody tr:nth-child(even) td:not(.g):not(.y):not(.r){ background:#faf9f6; }
+  td.g{ background:var(--green-cell); color:var(--green-text); font-weight:600; }
+  td.y{ background:var(--yellow-cell); color:var(--yellow-text); font-weight:600; }
+  td.r{ background:var(--red-cell); color:var(--red-text); font-weight:700; }
+  .legend{ display:flex; gap:18px; align-items:center; margin-top:14px; font-size:12px; color:#5c5a52; flex-wrap:wrap; }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .swatch{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+
+  /* ---------- Recommendations ---------- */
+  .rec-list{ display:flex; flex-direction:column; gap:12px; }
+  .rec-card{
+    display:grid; grid-template-columns:96px 1fr; gap:16px;
+    background:var(--white); border-radius:10px; padding:16px 18px; align-items:start;
+  }
+  @media (max-width:640px){ .rec-card{ grid-template-columns:1fr; } }
+  .priority{
+    font-size:10px; letter-spacing:.08em; font-weight:700; text-transform:uppercase;
+    padding:6px 0; border-radius:999px; text-align:center; height:fit-content;
+  }
+  .priority.high{ background:var(--salmon); color:#5c1f18; }
+  .priority.medium{ background:var(--yellow); color:#5c4a10; }
+  .priority.low{ background:var(--aqua); color:#0f4d47; }
+  .rec-title{ font-weight:600; font-size:14.5px; margin-bottom:5px; }
+  .rec-why{ font-size:12.5px; color:#5c5a52; line-height:1.5; }
+
+  /* ---------- Footer ---------- */
+  footer{
+    margin-top:20px; padding:30px 5vw 40px; background:var(--sand); border-top:1px solid var(--sand-line);
+  }
+  .footer-wrap{ max-width:1320px; margin:0 auto; display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; align-items:flex-end; }
+  .caveat{ max-width:640px; font-size:11.5px; color:#6b685f; line-height:1.6; }
+  .caveat b{ color:var(--ink); }
+  .tagline{ font-family:'Besley',serif; font-style:italic; font-size:15px; color:var(--turquoise); text-align:right; }
+  .waves{ margin-top:6px; }
+
+  ::-webkit-scrollbar{ height:8px; width:8px; }
+  ::-webkit-scrollbar-thumb{ background:#c9c3b3; border-radius:8px; }
+
+  /* ---------- Native bar / line charts (no external libs) ---------- */
+  .bars{ display:flex; flex-direction:column; gap:16px; }
+  .bar-row{ display:grid; grid-template-columns:250px 1fr 56px; align-items:center; gap:14px; }
+  .bar-row .bar-label{ font-size:12.5px; font-weight:500; }
+  .bar-row .bar-title{ font-weight:600; font-size:12.5px; }
+  .bar-row .bar-desc{ font-size:10.5px; color:#8a8778; line-height:1.35; margin-top:2px; }
+  .bar-row .bar-track{ background:#f1efe8; border-radius:6px; height:20px; position:relative; overflow:visible; }
+  .bar-row .bar-fill{ height:100%; border-radius:6px; }
+  .bar-row .bar-value{ font-size:12.5px; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; }
+  .bar-row.compact{ grid-template-columns:150px 1fr 50px; }
+  .bar-row.compact .bar-track{ height:15px; }
+  .fleet-line{ position:absolute; top:-6px; bottom:-6px; width:2px; background:var(--ink); }
+  .fleet-line .fleet-tag{ position:absolute; top:-18px; left:6px; font-size:10px; white-space:nowrap; color:var(--ink); font-weight:600; }
+  .axis-caption{ font-size:11px; color:#8a8778; margin-top:4px; }
+
+  .metric-toggle{ display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .metric-btn{
+    font-family:'Poppins',sans-serif; font-size:12px; font-weight:600; letter-spacing:.02em;
+    background:var(--sand); color:#6b685f; border:1px solid var(--sand-line); border-radius:999px;
+    padding:8px 18px; cursor:pointer; transition:background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .metric-btn:hover{ border-color:var(--teal); color:var(--turquoise); }
+  .metric-btn.active{ background:var(--turquoise); color:var(--white); border-color:var(--turquoise); }
+
+  .trend-chart{ width:100%; height:100%; }
+  .trend-chart .grid-line{ stroke:#eee8dc; stroke-width:1; }
+  .trend-chart .trend-path{ fill:none; stroke:var(--turquoise); stroke-width:3; }
+  .trend-chart .trend-area{ fill:rgba(0,72,79,0.08); stroke:none; }
+  .trend-chart .trend-dot{ fill:var(--turquoise); }
+  .trend-chart .trend-label{ font-family:'Poppins',sans-serif; font-size:12px; fill:var(--ink); font-weight:600; }
+  .trend-chart .trend-year{ font-family:'Poppins',sans-serif; font-size:11px; fill:#8a8778; }
+
+  /* ---------- Layout with side nav ---------- */
+  .layout{ display:flex; align-items:flex-start; max-width:1500px; margin:0 auto; padding:0 5vw; gap:36px; }
+
+  .side-nav{
+    width:220px; flex-shrink:0; position:sticky; top:24px;
+    padding:22px 0; margin-top:38px;
+  }
+  .side-nav .nav-eyebrow{
+    font-size:10px; letter-spacing:.12em; text-transform:uppercase; font-weight:600;
+    color:#8a8778; margin-bottom:12px; padding-left:14px;
+  }
+  .side-nav a{
+    display:block; text-decoration:none; color:#5c5a52; font-size:13px; font-weight:500;
+    padding:9px 14px; border-left:3px solid var(--sand-line); line-height:1.35;
+    transition:border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .side-nav a:hover{ color:var(--turquoise); background:rgba(0,72,79,0.04); }
+  .side-nav a.active{
+    color:var(--turquoise); border-left-color:var(--teal); background:rgba(0,72,79,0.06); font-weight:600;
+  }
+  @media (max-width:980px){
+    .layout{ flex-direction:column; padding:0; }
+    .side-nav{
+      position:static; width:100%; display:flex; overflow-x:auto; gap:4px;
+      padding:14px 5vw; margin-top:0; border-bottom:1px solid var(--sand-line);
+    }
+    .side-nav .nav-eyebrow{ display:none; }
+    .side-nav a{
+      white-space:nowrap; border-left:none; border-bottom:3px solid var(--sand-line); flex-shrink:0;
+    }
+    .side-nav a.active{ border-left:none; border-bottom-color:var(--teal); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="brand-lockup">
+      <div class="shield">
+        <svg viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="30" y="18" text-anchor="middle" fill="white" font-family="Poppins" font-weight="700" font-size="15" letter-spacing="1">NCL</text>
+          <path d="M4 27 Q 12 21, 20 27 T 36 27 T 52 27" stroke="white" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="wordmark">
+        <div class="line1">NORWEGIAN</div>
+        <div class="line2">CRUISE LINE</div>
+      </div>
+    </div>
+    <div class="period-pill">2026 YTD &nbsp;·&nbsp; Dec 20, 2025 – Jun 26, 2026</div>
+  </div>
+  <div class="header-title">
+    <h1>Guest Satisfaction Dashboard</h1>
+    <div class="header-sub">Fleet-wide sentiment analysis across 201,107 guest-sailings and 13 improvement-comment survey boxes, with a comparable 2023–2026 trend view. Point-in-time figures reflect 2026 YTD; trend figures use each year's single general-comment field for a fair year-over-year read.</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="side-nav" id="sideNav">
+    <div class="nav-eyebrow">On this page</div>
+    <a href="#summary" data-target="summary">Overview</a>
+    <a href="#trend" data-target="trend">Fleet Trend, 2023–2026</a>
+    <a href="#category-performance" data-target="category-performance">Category Performance</a>
+    <a href="#category-movers" data-target="category-movers">Category Movers</a>
+    <a href="#ship-performance" data-target="ship-performance">Ship Performance</a>
+    <a href="#ship-movers" data-target="ship-movers">Ship Movers</a>
+    <a href="#matrix" data-target="matrix">Ship × Category Matrix</a>
+    <a href="#crew" data-target="crew">Crew &amp; Staff Rollup</a>
+    <a href="#recommendations" data-target="recommendations">Recommendations</a>
+  </nav>
+
+<main>
+
+  <!-- ================= SUMMARY STATS ================= -->
+  <section id="summary">
+    <div class="stat-grid">
+      <div class="stat-card good">
+        <div class="label">Fleet Avg GSS</div>
+        <div class="value">3.84<span style="font-size:14px;color:#8a8778;">/5</span></div>
+        <div class="delta flat">201,096 scored guest-sailings</div>
+      </div>
+      <div class="stat-card good">
+        <div class="label">Negative comment share</div>
+        <div class="value">17.1%</div>
+        <div class="delta pos">▼ 2.0 pts vs. 2023 (19.1%)</div>
+      </div>
+      <div class="stat-card good">
+        <div class="label">Best-performing ship</div>
+        <div class="value">Luna</div>
+        <div class="delta pos">4.17 avg GSS · new ship, 2026 only</div>
+      </div>
+      <div class="stat-card watch">
+        <div class="label">Ship to watch</div>
+        <div class="value">Star</div>
+        <div class="delta neg">3.55 avg GSS · –0.29 vs. fleet</div>
+      </div>
+      <div class="stat-card watch">
+        <div class="label">Category to watch</div>
+        <div class="value" style="font-size:22px;">Value/Pricing</div>
+        <div class="delta neg">▲ 2.0 pts negative since 2023</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Crew/staff mentions</div>
+        <div class="value" style="font-size:22px;">58,495</div>
+        <div class="delta flat">26.4% negative · 17.1% positive</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TREND + CALLOUT ================= -->
+  <section id="trend">
+    <div class="section-head">
+      <h2>The fleet is improving, 2023 → 2026</h2>
+      <div class="section-note">Share of comparable general-comment text phrased negatively, by year. Comparable basis only — excludes NCL's 12 dedicated 2026 survey boxes for a fair year-over-year read.</div>
+    </div>
+    <div class="two-col">
+      <div class="panel chart-wrap" style="height:300px;">
+        <svg id="fleetTrendChart" class="trend-chart" viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="callout">
+        <div class="headline">Negative-phrased comments fell every year: <b>19.1% → 18.0% → 17.4% → 17.1%</b>.</div>
+        <div class="sub">Nearly every category improved on this basis. The one clear exception is <b style="color:var(--yellow);">Value/Pricing</b>, which moved the wrong way — from 26.0% negative in 2023 to 28.1% in 2026 YTD. See Recommendations below.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CATEGORY PERFORMANCE ================= -->
+  <section id="category-performance">
+    <div class="section-head">
+      <h2>Category performance, 2026 YTD</h2>
+      <div class="section-note">Two different measures — toggle between them. They don't always agree (see the callout below the chart).</div>
+    </div>
+    <div class="panel">
+      <div class="metric-toggle">
+        <button class="metric-btn active" data-metric="neg">% Negative (suggestion tone)</button>
+        <button class="metric-btn" data-metric="gss">Avg GSS (guest satisfaction)</button>
+      </div>
+      <div class="bars" id="categoryChart"></div>
+      <div class="axis-caption" id="categoryAxisCaption">% of improvement-comments phrased negatively (0–32% scale). Lower is better. Reflects the tone guests used when writing suggestions — not how satisfied they were.</div>
+      <div class="callout" style="margin-top:18px;">
+        <div class="headline">These two views don't always agree.</div>
+        <div class="sub">Onboard Recreation has a mid-pack % negative (27.0%), but the <b style="color:var(--yellow);">lowest Avg GSS of any category (3.26)</b>. Itinerary/Ports has the highest % negative (27.6%) but a decent Avg GSS (3.67). A category can get plenty of negatively-phrased suggestions from guests who were still, overall, satisfied — and vice versa. Use % Negative to spot where guests have the most complaints to make; use Avg GSS to spot where the guests themselves were least happy.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CATEGORY MOVERS ================= -->
+  <section id="category-movers">
+    <div class="section-head">
+      <h2>Biggest category movers, 2023 → 2026</h2>
+      <div class="section-note">Change in % negative on the comparable general-comment basis. Negative change = improvement.</div>
+    </div>
+    <div class="panel">
+      <div class="mover-cols">
+        <div class="mover-block improved">
+          <h3>Most improved</h3>
+          <div class="mover-row with-desc">
+            <span class="name">Information/Communication</span><span class="chg pos">−10.8 pts</span>
+            <span class="figs">% negative: 38.2% → 27.4%</span>
+            <span class="desc">Clarity and timeliness of info from NCL — pre-cruise emails, onboard announcements, pricing disclosure, and app communication.</span>
+          </div>
+          <div class="mover-row with-desc">
+            <span class="name">Embarkation/Debarkation</span><span class="chg pos">−8.6 pts</span>
+            <span class="figs">% negative: 33.8% → 25.2%</span>
+            <span class="desc">The boarding and disembarkation process — queues, terminal conditions, and instruction clarity.</span>
+          </div>
+          <div class="mover-row with-desc">
+            <span class="name">Itinerary/Ports</span><span class="chg pos">−7.9 pts</span>
+            <span class="figs">% negative: 25.2% → 17.4%</span>
+            <span class="desc">Specific ports of call, shore time, and the overall itinerary/route.</span>
+          </div>
+        </div>
+        <div class="mover-block declined">
+          <h3>Most declined</h3>
+          <div class="mover-row with-desc">
+            <span class="name">Value/Pricing</span><span class="chg neg">+2.0 pts</span>
+            <span class="figs">% negative: 26.0% → 28.1%</span>
+            <span class="desc">Whether the price paid felt worth it — drink packages, gratuities, specialty-dining upcharges, and Wi-Fi/excursion cost.</span>
+          </div>
+          <div class="mover-row with-desc">
+            <span class="name">Stateroom</span><span class="chg neg">+0.1 pts</span>
+            <span class="figs">% negative: 16.65% → 16.78%</span>
+            <span class="desc">The cabin itself — condition, noise/temperature, cleanliness, space/layout, and bedding.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SHIP PERFORMANCE ================= -->
+  <section id="ship-performance">
+    <div class="section-head">
+      <h2>Ship performance vs. fleet average</h2>
+      <div class="section-note">Avg overall GSS by ship, 2026 YTD. Fleet average is 3.84. Luna (new in 2026) and Aqua (entered service March 2025) are newer to the fleet, marked with *.</div>
+    </div>
+    <div class="panel">
+      <div class="bars compact" id="shipChart" style="position:relative;"></div>
+      <div class="axis-caption">Avg overall GSS, 1–5 scale (axis shown 3.4–4.3) · dashed line = fleet average, 3.84</div>
+      <div class="axis-caption" style="margin-top:6px;">* Luna entered service in 2026 (no prior-year data at all). Aqua entered service in March 2025, so it has a 2025→2026 comparison (see Ship Movers below) but no 2023 baseline.</div>
+    </div>
+  </section>
+
+  <!-- ================= SHIP MOVERS ================= -->
+  <section id="ship-movers">
+    <div class="section-head">
+      <h2>Biggest ship movers, 2025 → 2026</h2>
+      <div class="section-note">Change in avg GSS score. Excludes Luna (no 2025 comparison data).</div>
+    </div>
+    <div class="panel">
+      <div class="mover-cols">
+        <div class="mover-block improved">
+          <h3>Most improved</h3>
+          <div class="mover-row"><span class="name">Sky</span><span class="figs">Avg GSS: 3.28 → 3.78</span><span class="chg pos">+0.50</span></div>
+          <div class="mover-row"><span class="name">Epic</span><span class="figs">Avg GSS: 3.26 → 3.67</span><span class="chg pos">+0.40</span></div>
+          <div class="mover-row"><span class="name">Spirit</span><span class="figs">Avg GSS: 3.32 → 3.71</span><span class="chg pos">+0.38</span></div>
+        </div>
+        <div class="mover-block declined">
+          <h3>Declined</h3>
+          <div class="mover-row"><span class="name">Getaway</span><span class="figs">Avg GSS: 3.62 → 3.60</span><span class="chg neg">−0.02</span></div>
+        </div>
+      </div>
+      <div class="axis-caption" style="margin-top:14px;">Only 1 of 20 comparable ships declined 2025→2026 — every other ship improved, including Jewel (+0.00, essentially flat) and Sun (+0.07).</div>
+    </div>
+  </section>
+
+  <!-- ================= SHIP x CATEGORY MATRIX ================= -->
+  <section id="matrix">
+    <div class="section-head">
+      <h2>Ship × Category matrix</h2>
+      <div class="section-note">Color = this ship's % negative in that category vs. the fleet average for that category (not an absolute scale). Newer ships (Luna: 2026, Aqua: March 2025) marked with *.</div>
+    </div>
+    <div class="panel">
+      <div class="matrix-scroll">
+        <table class="matrix" id="matrixTable"></table>
+      </div>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--green-cell);"></i>Notably better than fleet avg</span>
+        <span><i class="swatch" style="background:var(--yellow-cell);"></i>Near fleet avg</span>
+        <span><i class="swatch" style="background:var(--red-cell);"></i>Notably worse than fleet avg</span>
+        <span>* Newer ship — Luna (entered 2026), Aqua (entered March 2025)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CREW ROLLUP ================= -->
+  <section id="crew">
+    <div class="section-head">
+      <h2>Crew &amp; staff service — cross-cutting rollup</h2>
+      <div class="section-note">No single survey box asks about staff directly; this aggregates any comment anywhere that mentions crew/staff language, in addition to its native category.</div>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div style="display:flex; gap:34px; flex-wrap:wrap; margin-bottom:18px;">
+          <div><div class="label" style="font-size:11px;color:#6b685f;font-weight:600;text-transform:uppercase;">Statements</div><div style="font-size:26px;font-weight:700;">58,495</div></div>
+          <div><div class="label" style="font-size:11px;color:#6b685f;font-weight:600;text-transform:uppercase;">Unique guests</div><div style="font-size:26px;font-weight:700;">38,078</div></div>
+          <div><div class="label" style="font-size:11px;color:#6b685f;font-weight:600;text-transform:uppercase;">Sentiment</div><div style="font-size:15px;font-weight:600;margin-top:6px;"><span style="color:#1c7a5e;">17.1% pos</span> &nbsp;/&nbsp; <span style="color:#b5453a;">26.4% neg</span> &nbsp;/&nbsp; <span style="color:#7a7768;">56.5% neutral</span></div></div>
+        </div>
+        <h3 style="font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:#6b685f;margin-bottom:10px;">Top 5 ships by % negative crew/staff mentions</h3>
+        <div class="mover-row"><span class="name">Getaway</span><span class="figs">5,868 mentions</span><span class="chg neg">29.4%</span></div>
+        <div class="mover-row"><span class="name">Star</span><span class="figs">3,899 mentions</span><span class="chg neg">28.9%</span></div>
+        <div class="mover-row"><span class="name">Aqua</span><span class="figs">5,074 mentions</span><span class="chg neg">28.3%</span></div>
+        <div class="mover-row"><span class="name">Encore</span><span class="figs">3,996 mentions</span><span class="chg neg">26.8%</span></div>
+        <div class="mover-row"><span class="name">Epic</span><span class="figs">3,591 mentions</span><span class="chg neg">26.7%</span></div>
+      </div>
+      <div class="callout">
+        <div class="headline">Biggest gap to close: <b>Bars &amp; Beverage wait times</b></div>
+        <div class="sub">"Wait Time/Service Speed" comments in Bars &amp; Beverage run 76% negative, and "Ambiance/Noise/Crowding" runs 53% negative — the two most negative sub-themes found anywhere in this dataset at meaningful volume. This is the single most actionable, highest-confidence finding in the workbook.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RECOMMENDATIONS ================= -->
+  <section id="recommendations">
+    <div class="section-head">
+      <h2>Top recommendations</h2>
+      <div class="section-note">Full list and supporting evidence in the source workbook's Recommendations tab.</div>
+    </div>
+    <div class="rec-list">
+      <div class="rec-card">
+        <div class="priority high">High priority</div>
+        <div>
+          <div class="rec-title">Add bar staff / streamline service at peak hours (fleet-wide)</div>
+          <div class="rec-why">Bars &amp; Beverage "Wait Time/Service Speed" runs 76% negative on 2,657 comments — the highest-confidence negative finding in the dataset. Short-term horizon; likely to lift F&amp;B sentiment broadly.</div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="priority high">High priority</div>
+        <div>
+          <div class="rec-title">Investigate internet/connectivity fleet-wide</div>
+          <div class="rec-why">"Quality of internet connection" is 32% negative across 19,290 comments — the largest single driver inside Guest Services. Medium-term; likely to lift Guest Services and Information/Communication together.</div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="priority high">High priority</div>
+        <div>
+          <div class="rec-title">Investigate Value/Pricing — the one category trending worse, 2023→2026</div>
+          <div class="rec-why">Every other category improved over the period; Value/Pricing moved from 26.0% to 28.1% negative. The clearest multi-year warning signal in the data — worth root-causing (pricing changes, package restructuring, gratuity confusion) before it compounds.</div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="priority medium">Medium priority</div>
+        <div>
+          <div class="rec-title">Ship-specific review of Itinerary/Ports complaints</div>
+          <div class="rec-why">Itinerary/Ports has the highest fleet-wide negative share (27.6%); Aqua, Getaway, and Escape run above the fleet average. Confirms whether this is a port/excursion-pricing issue or ship-specific before committing to an itinerary redesign.</div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="priority medium">Medium priority</div>
+        <div>
+          <div class="rec-title">Review embarkation/debarkation queue management on Star, Pearl, Dawn</div>
+          <div class="rec-why">These 3 ships run above fleet-average negative share for this category; wait time and communication clarity are the top recurring themes. Targeted terminal-process fixes rather than fleet-wide investment.</div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <div class="priority low">Low priority</div>
+        <div>
+          <div class="rec-title">Study and replicate what's working on above-average ships</div>
+          <div class="rec-why">Not every finding is negative — several ships and categories perform meaningfully above the fleet average. Identify the staffing model, layout, or training behind that and consider replicating fleet-wide.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<footer>
+  <div class="footer-wrap">
+    <div class="caveat">
+      <b>Methodology caveat:</b> This dashboard uses a rule-based text classifier, validated against NCL's own pre-tagged sentiment field in the 2025 data at 58.7% whole-comment agreement. Treat every percentage as directionally reliable, not precise to the decimal — large, consistent multi-year trends (like Value/Pricing) are far more trustworthy than any single-category, single-year number.
+    </div>
+    <div>
+      <div class="tagline">"It's Different Out Here"</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// -------- palette --------
+const TEAL = "#68ACAA", SALMON = "#FF938A", TURQ = "#00484F";
+
+// ================= Fleet trend line (native SVG, no libraries) =================
+(function drawTrend(){
+  const years = ['2023', '2024', '2025', '2026 YTD'];
+  const vals = [19.1, 18.0, 17.4, 17.1];
+  const svg = document.getElementById('fleetTrendChart');
+  const W = 600, H = 280, padL = 40, padR = 20, padT = 24, padB = 34;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const yMin = 15, yMax = 20;
+  const x = i => padL + (i / (years.length - 1)) * plotW;
+  const y = v => padT + (1 - (v - yMin) / (yMax - yMin)) * plotH;
+
+  let svgHtml = '';
+  // gridlines
+  [15,16,17,18,19,20].forEach(g => {
+    svgHtml += `<line class="grid-line" x1="${padL}" x2="${W-padR}" y1="${y(g)}" y2="${y(g)}"/>`;
+    svgHtml += `<text class="trend-year" x="${padL-8}" y="${y(g)+4}" text-anchor="end">${g}%</text>`;
+  });
+  // area path
+  let areaPath = `M ${x(0)} ${y(vals[0])} `;
+  vals.forEach((v,i) => { if(i>0) areaPath += `L ${x(i)} ${y(v)} `; });
+  areaPath += `L ${x(vals.length-1)} ${padT+plotH} L ${x(0)} ${padT+plotH} Z`;
+  svgHtml += `<path class="trend-area" d="${areaPath}"/>`;
+  // line path
+  let linePath = `M ${x(0)} ${y(vals[0])} `;
+  vals.forEach((v,i) => { if(i>0) linePath += `L ${x(i)} ${y(v)} `; });
+  svgHtml += `<path class="trend-path" d="${linePath}"/>`;
+  // dots + labels
+  vals.forEach((v,i) => {
+    svgHtml += `<circle class="trend-dot" cx="${x(i)}" cy="${y(v)}" r="5"/>`;
+    svgHtml += `<text class="trend-label" x="${x(i)}" y="${y(v)-14}" text-anchor="middle">${v}%</text>`;
+    svgHtml += `<text class="trend-year" x="${x(i)}" y="${H-10}" text-anchor="middle">${years[i]}</text>`;
+  });
+  svg.innerHTML = svgHtml;
+})();
+
+// ================= Category performance bars =================
+const catData = [
+  ['Stateroom', 17.5, 3.52, 'The cabin itself — condition, noise/temperature, cleanliness, space & bedding'],
+  ['Entertainment', 19.0, 3.55, 'Scheduled shows and hosted onboard activities'],
+  ['Ship Condition/Facilities', 19.9, 3.75, "The ship's physical condition outside the stateroom — elevators, decks, design"],
+  ['Food & Beverage', 22.6, 3.52, 'Any dining or drinking venue — buffet, main dining room, specialty restaurants, bars'],
+  ['Value/Pricing', 24.8, 3.32, 'Whether the price paid felt worth it — packages, gratuities, upcharges, fees'],
+  ['Embarkation/Debarkation', 25.6, 3.73, 'The boarding and disembarkation process — queues, terminal, instructions'],
+  ['Information/Communication', 26.4, 3.74, 'Clarity & timeliness of info from NCL — pre-cruise, announcements, pricing, app'],
+  ['Guest Services', 26.9, 3.50, 'Spa/salon, onboard shops, photography, shore excursion desk, app, Wi-Fi quality'],
+  ['Onboard Recreation', 27.0, 3.26, 'Physical attractions — mini golf, water slides, ropes course, sports courts'],
+  ['Itinerary/Ports', 27.6, 3.67, 'Specific ports of call, shore time, and the overall itinerary/route']
+];
+function colorForPct(p, lo, hi){
+  const t = Math.max(0, Math.min(1, (p - lo) / (hi - lo)));
+  const c1 = [104,172,170], c2 = [255,147,138];
+  const rgb = c1.map((c,i) => Math.round(c + (c2[i]-c)*t));
+  return `rgb(${rgb.join(',')})`;
+}
+function colorForGSS(v, lo, hi){
+  // inverted: higher GSS is better (teal), lower is worse (salmon)
+  const t = Math.max(0, Math.min(1, (hi - v) / (hi - lo)));
+  const c1 = [104,172,170], c2 = [255,147,138];
+  const rgb = c1.map((c,i) => Math.round(c + (c2[i]-c)*t));
+  return `rgb(${rgb.join(',')})`;
+}
+const categoryAxisCaptions = {
+  neg: '% of improvement-comments phrased negatively (0–32% scale). Lower is better. Reflects the tone guests used when writing suggestions — not how satisfied they were.',
+  gss: 'Avg overall GSS (1–5 scale, axis shown 3.0–4.0) among guests who commented in that category box. Higher is better. Fleet-wide avg GSS is 3.84.'
+};
+(function drawCategoryBars(){
+  const container = document.getElementById('categoryChart');
+  const caption = document.getElementById('categoryAxisCaption');
+
+  function render(metric){
+    let rows;
+    if (metric === 'neg') {
+      rows = [...catData].sort((a,b) => a[1] - b[1]);
+      const max = 32;
+      container.innerHTML = rows.map(([label, val, gss, desc]) => `
+        <div class="bar-row">
+          <div class="bar-label">
+            <div class="bar-title">${label}</div>
+            <div class="bar-desc">${desc}</div>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${(val/max*100).toFixed(1)}%; background:${colorForPct(val,17,28)};"></div>
+          </div>
+          <div class="bar-value">${val}%</div>
+        </div>
+      `).join('');
+    } else {
+      rows = [...catData].sort((a,b) => a[2] - b[2]);
+      const axisMin = 3.0, axisMax = 4.0;
+      container.innerHTML = rows.map(([label, val, gss, desc]) => `
+        <div class="bar-row">
+          <div class="bar-label">
+            <div class="bar-title">${label}</div>
+            <div class="bar-desc">${desc}</div>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${((gss-axisMin)/(axisMax-axisMin)*100).toFixed(1)}%; background:${colorForGSS(gss,3.2,3.8)};"></div>
+          </div>
+          <div class="bar-value">${gss.toFixed(2)}</div>
+        </div>
+      `).join('');
+    }
+    caption.textContent = categoryAxisCaptions[metric];
+  }
+
+  render('neg');
+
+  document.querySelectorAll('.metric-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.metric-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render(btn.dataset.metric);
+    });
+  });
+})();
+
+// ================= Ship performance bars =================
+const shipData = [
+  ["Luna",4.17,true],["Encore",3.99],["Escape",3.99],["Bliss",3.96],["Viva",3.96],
+  ["Prima",3.95],["Joy",3.92],["Jewel",3.91],["Gem",3.87],["Aqua",3.87,true],
+  ["Jade",3.85],["Sky",3.84],["Pride of America",3.80],["Pearl",3.80],["Spirit",3.77],
+  ["Breakaway",3.73],["Epic",3.72],["Getaway",3.66],["Dawn",3.65],["Sun",3.58],["Star",3.55]
+];
+const fleetAvg = 3.84;
+(function drawShipBars(){
+  const axisMin = 3.4, axisMax = 4.3;
+  const pct = v => ((v - axisMin) / (axisMax - axisMin) * 100).toFixed(1);
+  const container = document.getElementById('shipChart');
+  container.innerHTML = shipData.map(([name, val, isNew]) => `
+      <div class="bar-row compact">
+        <div class="bar-label">${name}${isNew ? ' *' : ''}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct(val)}%; background:${val >= fleetAvg ? TEAL : SALMON};"></div>
+        </div>
+        <div class="bar-value">${val.toFixed(2)}</div>
+      </div>
+    `).join('');
+
+  // Position the fleet-average marker with a CSS calc() expression so it's
+  // always correct relative to the *current* rendered width — never a one-time
+  // pixel snapshot that can go stale on a different screen size, zoom level,
+  // or font-load timing.
+  const LABEL_W = 150, VALUE_W = 50, GAP = 14; // must match .bar-row.compact grid
+  const fraction = (fleetAvg - axisMin) / (axisMax - axisMin);
+  const leftCalc = `calc(${LABEL_W + GAP}px + (100% - ${LABEL_W + GAP + VALUE_W + GAP}px) * ${fraction})`;
+  const line = document.createElement('div');
+  line.className = 'fleet-line';
+  line.style.left = leftCalc;
+  line.innerHTML = '<span class="fleet-tag">Fleet avg 3.84</span>';
+  container.appendChild(line);
+})();
+
+// ================= Ship x Category matrix =================
+const categories = ["Embark/Debark","Entertainment","Food & Beverage","Guest Services","Info/Comms","Itinerary/Ports","Recreation","Ship Condition","Stateroom","Value/Pricing"];
+// each row: [shipName, isNew, [[value, colorClass], ...]]
+const G='g', Y='y', R='r';
+const matrixRows = [
+ ["Luna",true,[["26%",Y],["19%",Y],["20%",Y],["26%",Y],["26%",Y],["25%",Y],["26%",Y],["17%",G],["14%",G],["23%",Y]]],
+ ["Encore",false,[["25%",Y],["20%",Y],["23%",Y],["27%",Y],["23%",G],["27%",Y],["37%",R],["21%",Y],["16%",Y],["25%",Y]]],
+ ["Escape",false,[["27%",Y],["20%",Y],["20%",Y],["27%",Y],["24%",Y],["30%",Y],["25%",Y],["20%",Y],["17%",Y],["25%",Y]]],
+ ["Bliss",false,[["26%",Y],["20%",Y],["22%",Y],["26%",Y],["24%",Y],["23%",G],["29%",R],["22%",Y],["18%",Y],["26%",Y]]],
+ ["Viva",false,[["25%",Y],["19%",Y],["22%",Y],["29%",Y],["29%",Y],["29%",Y],["29%",R],["17%",G],["15%",Y],["24%",Y]]],
+ ["Prima",false,[["22%",G],["18%",Y],["21%",Y],["28%",Y],["29%",Y],["29%",Y],["32%",R],["16%",G],["17%",Y],["26%",Y]]],
+ ["Joy",false,[["25%",Y],["20%",Y],["22%",Y],["27%",Y],["28%",Y],["28%",Y],["31%",R],["22%",Y],["17%",Y],["27%",Y]]],
+ ["Jewel",false,[["23%",Y],["17%",Y],["19%",G],["27%",Y],["24%",Y],["27%",Y],["20%",G],["18%",G],["15%",Y],["21%",G]]],
+ ["Gem",false,[["25%",Y],["18%",Y],["23%",Y],["26%",Y],["25%",Y],["28%",Y],["20%",G],["22%",Y],["17%",Y],["25%",Y]]],
+ ["Aqua",true,[["25%",Y],["21%",Y],["25%",Y],["28%",Y],["30%",R],["32%",R],["30%",R],["16%",G],["16%",Y],["23%",Y]]],
+ ["Jade",false,[["26%",Y],["17%",Y],["21%",Y],["26%",Y],["25%",Y],["27%",Y],["18%",G],["20%",Y],["17%",Y],["23%",Y]]],
+ ["Sky",false,[["24%",Y],["14%",G],["22%",Y],["24%",G],["24%",Y],["24%",Y],["14%",G],["32%",R],["17%",Y],["25%",Y]]],
+ ["Pride of America",false,[["22%",G],["13%",G],["20%",Y],["28%",Y],["25%",Y],["23%",G],["17%",G],["26%",R],["16%",Y],["27%",Y]]],
+ ["Pearl",false,[["29%",R],["17%",Y],["20%",Y],["26%",Y],["29%",Y],["28%",Y],["24%",Y],["25%",R],["18%",Y],["26%",Y]]],
+ ["Spirit",false,[["17%",G],["18%",Y],["22%",Y],["27%",Y],["28%",Y],["24%",G],["21%",Y],["18%",G],["20%",Y],["32%",R]]],
+ ["Breakaway",false,[["27%",Y],["21%",Y],["23%",Y],["27%",Y],["28%",Y],["25%",Y],["25%",Y],["20%",Y],["18%",Y],["25%",Y]]],
+ ["Epic",false,[["25%",Y],["20%",Y],["22%",Y],["25%",Y],["27%",Y],["28%",Y],["23%",Y],["26%",R],["20%",R],["26%",Y]]],
+ ["Getaway",false,[["24%",Y],["19%",Y],["25%",Y],["27%",Y],["26%",Y],["31%",R],["28%",R],["18%",Y],["19%",Y],["24%",Y]]],
+ ["Dawn",false,[["28%",Y],["18%",Y],["24%",Y],["27%",Y],["25%",Y],["27%",Y],["17%",G],["23%",Y],["18%",Y],["25%",Y]]],
+ ["Sun",false,[["27%",Y],["18%",Y],["21%",Y],["30%",R],["30%",R],["26%",Y],["15%",G],["24%",R],["18%",Y],["22%",G]]],
+ ["Star",false,[["30%",R],["19%",Y],["28%",R],["26%",Y],["29%",Y],["29%",Y],["14%",G],["20%",Y],["18%",Y],["24%",Y]]]
+];
+
+const tbl = document.getElementById('matrixTable');
+let thead = '<thead><tr><th>Ship</th>' + categories.map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
+let tbody = '<tbody>' + matrixRows.map(r => {
+  const name = r[0] + (r[1] ? ' *' : '');
+  const cells = r[2].map(c => `<td class="${c[1]}">${c[0]}</td>`).join('');
+  return `<tr><th>${name}</th>${cells}</tr>`;
+}).join('') + '</tbody>';
+tbl.innerHTML = thead + tbody;
+
+// ================= Side nav: smooth scroll + active state =================
+(function sideNav(){
+  const links = Array.from(document.querySelectorAll('.side-nav a'));
+  const sections = links.map(a => document.getElementById(a.dataset.target)).filter(Boolean);
+
+  links.forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.getElementById(a.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  const setActive = (id) => {
+    links.forEach(a => a.classList.toggle('active', a.dataset.target === id));
+  };
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      // pick the entry closest to the top of the viewport that's intersecting
+      const visible = entries.filter(e => e.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible.length > 0) setActive(visible[0].target.id);
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+    sections.forEach(s => observer.observe(s));
+  }
+
+  setActive('summary');
+})();
+</script>
+
+</body>
+</html>
